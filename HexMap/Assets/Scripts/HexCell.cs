@@ -95,6 +95,14 @@ public class HexCell : MonoBehaviour
             Vector3 uiPosition = uiRect.localPosition;
             uiPosition.z = -position.y;
             uiRect.localPosition = uiPosition;
+
+            if (hasOutgoingRiver && elevation < GetNeighbor(outgoingRiver).elevation) {
+                RemoveOutgoingRiver();
+            }
+            if (hasIncomingRiver && elevation > GetNeighbor(incomingRiver).elevation) {
+                RemoveIncomingRiver();
+            }
+
             Refresh();
         }
     }
@@ -198,4 +206,27 @@ public class HexCell : MonoBehaviour
     }
 
     //Adding Rivers
+    public void SetOutgoingRiver(HexDirection direction)
+    {
+        if (hasOutgoingRiver && outgoingRiver == direction)
+        {
+            return;
+        }
+        HexCell neighbor = GetNeighbor(direction);
+        if (!neighbor || elevation < neighbor.elevation) {
+            return;
+        }
+        RemoveOutgoingRiver();
+        if (hasIncomingRiver && incomingRiver == direction) {
+            RemoveIncomingRiver();
+        }
+        hasOutgoingRiver = true;
+        outgoingRiver = direction;
+        RefreshSelfOnly();
+
+        neighbor.RemoveIncomingRiver();
+        neighbor.hasIncomingRiver = true;
+        neighbor.incomingRiver = direction.Opposite();
+        neighbor.RefreshSelfOnly();
+    }
 }
