@@ -26,6 +26,8 @@ public static class HexMetrics {
 
     public const float elevationPerturbStrength = 1.5f;
 
+    public const float streamBedElevationOffset = -1f;
+
     public static Texture2D noiseSource;
 
     public const int chunkSizeX = 5;
