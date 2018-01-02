@@ -112,13 +112,10 @@ public class HexMesh : MonoBehaviour
 
 	public void AddQuadColor(Color c1, Color c2)
     {
-		
 		colors.Add(c1);
 		colors.Add(c1);
 		colors.Add(c2);
 		colors.Add(c2);
-
-        
     }
 
     public void AddQuadColor(Color c1, Color c2, Color c3, Color c4)

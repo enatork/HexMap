@@ -3,6 +3,8 @@
 public class HexCell : MonoBehaviour
 {
 
+	[SerializeField]
+	bool[] roads;
     public HexCoordinates coordinates;
 
     Color color;
