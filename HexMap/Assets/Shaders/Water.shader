@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: upgraded instancing buffer 'Props' to new syntax.
 
-Shader "Custom/Road" {
+Shader "Custom/Water" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
@@ -8,15 +8,12 @@ Shader "Custom/Road" {
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque"
-			"Queue" = "Geometry+1"
-		}
+		Tags { "RenderType"="Transparent" "Queue"="Transparent" }
 		LOD 200
-		Offset -1, -1
 		
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard fullforwardshadows decal:blend
+		#pragma surface surf Standard alpha//fullforwardshadows
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
@@ -25,7 +22,7 @@ Shader "Custom/Road" {
 
 		struct Input {
 			float2 uv_MainTex;
-			float3 worldPos;
+            float3 worldPos;
 		};
 
 		half _Glossiness;
@@ -40,17 +37,32 @@ Shader "Custom/Road" {
 		UNITY_INSTANCING_BUFFER_END(Props)
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			// Albedo comes from a texture tinted by color
-			float4 noise = tex2D(_MainTex, IN.worldPos.xz * 0.025);
-			fixed4 c = _Color * (noise.y * 0.75 + 0.25);
-			float blend = IN.uv_MainTex.x;
-			blend *= noise.x + 0.5;
-			blend = smoothstep(0.4, 0.7, blend);
+			//float2 uv = IN.uv_MainTex;
+			//uv.x = uv.x * 0.0625 + _Time.y * 0.005;
+			//uv.y -= _Time.y * 0.25;
+			//float4 noise = tex2D(_MainTex, uv);
+
+			//float2 uv2 = IN.uv_MainTex;
+			//uv2.x = uv2.x * 0.0625 - _Time.y * 0.0052;
+			//uv2.y -= _Time.y * 0.23;
+			//float4 noise2 = tex2D(_MainTex, uv2);
+
+            float2 uv1 = IN.worldPos.xz;
+            uv1.y += _Time.y;
+            float4 noise1 = tex2D(_MainTex, uv1 * 0.025);
+
+            float2 uv2 = IN.worldPos.xz;
+            uv2.x += _Time.y;
+            float4 noise2 = tex2D(_MainTex, uv2 * 0.025);
+            
+            float waves = noise1.z + noise2.x;
+            waves = smoothstep(0.75, 2, waves);
+			
+            fixed4 c = saturate(_Color + waves);
 			o.Albedo = c.rgb;
-			// Metallic and smoothness come from slider variables
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
-			o.Alpha = blend;
+			o.Alpha = c.a;
 		}
 		ENDCG
 	}

@@ -9,6 +9,8 @@ public class HexCell : MonoBehaviour
 
     public HexGridChunk chunk;
 
+    int waterLevel;
+
     public Color Color
     {
         get
@@ -23,6 +25,25 @@ public class HexCell : MonoBehaviour
             }
             color = value;
             Refresh();
+        }
+    }
+
+    public int WaterLevel {
+        get {
+            return waterLevel;
+        }
+        set {
+            if(waterLevel == value){
+                return;
+            }
+            waterLevel = value;
+            Refresh();
+        }
+    }
+
+    public bool IsUnderwater {
+        get{
+            return waterLevel > elevation;
         }
     }
 
@@ -153,7 +174,14 @@ public class HexCell : MonoBehaviour
         get
         {
             return
-                (elevation + HexMetrics.riverSurfaceElevationOffset) *
+                (elevation + HexMetrics.waterElevationOffset ) *
+                HexMetrics.elevationStep;
+        }
+    }
+
+    public float WaterSurfaceY {
+        get{
+            return (waterLevel + HexMetrics.waterElevationOffset) *
                 HexMetrics.elevationStep;
         }
     }

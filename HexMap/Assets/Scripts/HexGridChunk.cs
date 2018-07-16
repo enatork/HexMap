@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class HexGridChunk : MonoBehaviour
 {
 
-    public HexMesh terrain, rivers, roads;
+    public HexMesh terrain, rivers, roads, water;
 
     HexCell[] cells;
 
@@ -47,6 +48,7 @@ public class HexGridChunk : MonoBehaviour
         terrain.Clear();
         rivers.Clear();
         roads.Clear();
+        water.Clear();
         for (int i = 0; i < cells.Length; i++)
         {
             Triangulate(cells[i]);
@@ -54,6 +56,7 @@ public class HexGridChunk : MonoBehaviour
         terrain.Apply();
         rivers.Apply();
         roads.Apply();
+        water.Apply();
     }
 
     void Triangulate(HexCell cell)
@@ -100,6 +103,42 @@ public class HexGridChunk : MonoBehaviour
         {
             TriangulateConnection(direction, cell, e);
         }
+
+        if(cell.IsUnderwater){
+            TriangulateWater(direction, cell, center);
+        }
+    }
+
+    private void TriangulateWater(HexDirection direction, HexCell cell, Vector3 center)
+    {
+        center.y = cell.WaterSurfaceY;
+        Vector3 c1 = center + HexMetrics.GetFirstSolidCorner(direction);
+        Vector3 c2 = center + HexMetrics.GetSecondSolidCorner(direction);
+
+        water.AddTriangle(center, c1, c2);
+
+        if(direction <= HexDirection.SE){
+            HexCell neighbor = cell.GetNeighbor(direction);
+            if(neighbor == null || !neighbor.IsUnderwater){
+                return;
+            }
+        }
+
+        Vector3 bridge = HexMetrics.GetBridge(direction);
+        Vector3 e1 = c1 + bridge;
+        Vector3 e2 = c2 + bridge;
+
+        water.AddQuad(c1, c2, e1, e2);
+
+        if (direction <= HexDirection.E) {
+                HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
+                if (nextNeighbor == null || !nextNeighbor.IsUnderwater) {
+                    return;
+                }
+                water.AddTriangle(
+                    c2, e2, c2 + HexMetrics.GetBridge(direction.Next())
+                );
+            }
     }
 
     void TriangulateWithoutRiver(
